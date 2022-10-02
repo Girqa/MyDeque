@@ -1,10 +1,26 @@
 package Project.Classes;
 
-import Project.Classes.AbstractClasses.ElementOfChain;
+import Project.Exceptions.ClusterIsEmptyException;
 
-public class Cluster<T> extends ElementOfChain {
-    final private int size; // Размер кластера
-    private T[] elements;   // Массив элементов класетра
+public class Cluster<T> {
+    /**
+     * Базисный элемент двунаправленной очереди.
+     * - size - размер кластера (количество хранимых объектов)
+     * - elements - массив хранимых элементов
+     * - cursor - индекс текущего элемента массива
+     * - next - следующий кластер
+     * - prev - предыдущий кластер
+     */
+    final private int size;
+    private int cursor = 0;
+    private Object[] elements;
+    private Cluster<T> next;
+    private Cluster<T> prev;
+
+    public Cluster(int size) {
+        this.size = size;
+        elements = new Object[this.size];
+    }
 
     public Cluster(T... elements) {
         /*
@@ -34,7 +50,7 @@ public class Cluster<T> extends ElementOfChain {
         /*
          * Возвращает полную копию элементов кластера
          */
-        return elements.clone();
+        return (T[]) elements.clone();
     }
 
     public void setElements(T[] elements) {
@@ -51,23 +67,103 @@ public class Cluster<T> extends ElementOfChain {
         return size;
     }
 
-    @Override
-    public ElementOfChain getNext() {
-        return null;
+    public int getCursor() {
+        return cursor;
     }
 
-    @Override
-    public ElementOfChain getPrev() {
-        return null;
+    public Cluster<T> addFirst(T element) {
+        // Добавление первого элемента
+        if (cursor < size) {                          // Если не переполнен кластер -> кладем туда же
+            elements[cursor] = element;
+            cursor += 1;
+            return this;
+        } else if (next == null) {                    // Если переполнен и нет следующего -> создаем и кладем туда
+            Cluster<T> newNext = new Cluster<>(size);
+            newNext.addFirst(element);
+            next = newNext;
+            newNext.prev = this;
+            return next;
+        } else {                                      // Если есть следующий -> записываем туда как последний (заглушка)
+            return next.addLast(element);
+        }
     }
 
-    @Override
-    public ElementOfChain setNext() {
-        return null;
+    public Cluster<T> addLast(T element) {
+        if (cursor != size) {                        // Если кластер не полный -> втыкаем в начало
+            for (int i = cursor; i > 0; i--) {
+                elements[i] = elements[i-1];
+            }
+            cursor += 1;
+            elements[0] = element;
+            return this;
+        } else if (prev == null) {                    // Иначе если нет предыдущего -> создаем его и в него добавляем
+            Cluster<T> newPrev = new Cluster<>(size);
+            newPrev.addLast(element);
+            prev = newPrev;
+            newPrev.setNext(this);
+            return newPrev;
+        } else {                                      // Заглушка (такого вызова не должно быть!)
+            return prev.addLast(element);
+        }
     }
 
-    @Override
-    public ElementOfChain setPrev() {
-        return null;
+    public T getFirst() {
+        if (cursor > 0) {
+            return (T) elements[cursor-1];
+        }
+        throw new ClusterIsEmptyException("Cluster have no data");
+    }
+
+    public T getLast() {
+         if (cursor > 0) {
+             return (T) elements[0];
+         }
+         throw new ClusterIsEmptyException("Cluster is empty");
+    }
+
+    public T removeFirst() {
+        if (cursor > 0) {
+            T first = (T) elements[cursor-1];
+            elements[cursor-1] = null;
+            cursor -= 1;
+            return first;
+        }
+        else {
+            throw new ClusterIsEmptyException("Cluster is empty");
+        }
+    }
+
+    public T removeLast() {
+        if (cursor > 1) {
+            T last = (T) elements[0];
+            for (int i = 0; i < cursor-1; i++) {
+                elements[i] = elements[i+1];
+            }
+            cursor -= 1;
+            return last;
+        } else if (cursor == 1) {
+            T last = (T) elements[0];
+            elements[0] = null;
+            cursor -= 1;
+            return last;
+        } else {
+            throw new ClusterIsEmptyException();
+        }
+    }
+
+    public Cluster<T> getNext() {
+        return next;
+    }
+
+    public Cluster<T> getPrev() {
+        return prev;
+    }
+
+    public void setNext(Cluster<T> element) {
+        next = element;
+    }
+
+    public void setPrev(Cluster<T> element) {
+        prev = element;
     }
 }
