@@ -28,7 +28,8 @@ public class Cluster<T> {
          * elements - элементы кластера (по умолчанию пустой массив типов T)
          * количество элементов кластера будет определено автоматически
          */
-        this.size = elements.length;
+        size = elements.length;
+        cursor = size;
         // Обеспечили независимость внутренних элементов
         this.elements = elements.clone();
     }
@@ -44,6 +45,7 @@ public class Cluster<T> {
         }
         this.size = size;
         this.elements = elements.clone();
+        cursor = size;
     }
 
     public T[] getElements() {
@@ -139,6 +141,7 @@ public class Cluster<T> {
             for (int i = 0; i < cursor-1; i++) {
                 elements[i] = elements[i+1];
             }
+            elements[cursor-1] = null;
             cursor -= 1;
             return last;
         } else if (cursor == 1) {
@@ -149,6 +152,18 @@ public class Cluster<T> {
         } else {
             throw new ClusterIsEmptyException();
         }
+    }
+
+    public void removeElement(int index) {
+        if (index == cursor) {
+            elements[cursor] = null;
+            cursor -= 1;
+        }
+        for (int i = index; i < cursor-1; i++) {
+            elements[i] = elements[i+1];         // сдвинули все элементы
+        }
+        elements[cursor-1] = null;
+        cursor -= 1;
     }
 
     public Cluster<T> getNext() {

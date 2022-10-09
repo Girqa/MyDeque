@@ -2,6 +2,8 @@ package Project.Classes;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClusterConstructorTest {
@@ -72,5 +74,41 @@ class ClusterConstructorTest {
         assertThrows(IllegalArgumentException.class, () -> {
             claster1.setElements(integerArray3);
         });
+    }
+
+    @Test
+    void removeElement() {
+        // Удаление одного неповторяющегося элемента
+        Character[] data1 = new Character[]{'a', 'b', 'c', 'd', 'e'};
+        Cluster<Character> cluster1 = new Cluster<>(data1);
+        cluster1.removeElement(3);
+        assertArrayEquals(new Character[]{'a', 'b', 'c', 'e', null}, cluster1.getElements());
+
+        // Удаление одного повторяющегося элемента
+        Character[] data2 = new Character[]{'a', 'b', 'd', 'd', 'e'};
+        Cluster<Character> cluster2 = new Cluster<>(data2);
+        cluster2.removeElement(3);
+        assertArrayEquals(new Character[]{'a', 'b', 'd', 'e', null}, cluster2.getElements());
+
+        // Удаление первого элемента (первым по курсору будет 'e')
+        Character[] data3 = new Character[]{'a', 'b', 'c', 'd', 'e'};
+        Cluster<Character> cluster3 = new Cluster<>(data3);
+        cluster3.removeElement(4);
+        assertArrayEquals(new Character[]{'a', 'b', 'c', 'd', null}, cluster3.getElements());
+
+        // Удаление последнего элемента (последним будет 'a')
+        Character[] data4 = new Character[]{'a', 'b', 'c', 'd', 'e'};
+        Cluster<Character> cluster4 = new Cluster<>(data4);
+        cluster4.removeElement(0);
+        assertArrayEquals(new Character[]{'b', 'c', 'd', 'e', null}, cluster4.getElements());
+    }
+
+    @Test
+    void removeFirst() {
+        Character[] data1 = new Character[]{'a', 'b', 'c', 'd', 'e'};
+        Cluster<Character> cluster = new Cluster<>(data1);
+        cluster.removeLast();
+        System.out.println(Arrays.toString(cluster.getElements()));
+        System.out.println(cluster.getCursor());
     }
 }
