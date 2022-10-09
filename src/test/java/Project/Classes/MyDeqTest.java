@@ -3,6 +3,8 @@ package Project.Classes;
 import Project.Exceptions.DequeIsEmptyException;
 import org.junit.jupiter.api.Test;
 
+import java.util.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyDeqTest {
@@ -13,7 +15,6 @@ class MyDeqTest {
         // Проверка пустого конструктора
         MyDeq<Integer> deq = new MyDeq<>();
         assertEquals(0, deq.size());
-
         // Проверка конструктора предзаполненной очереди
         String[] data = new String[]{"Los", "Os", "Sos", "Pos", "Ros"};
         MyDeq<String> deq1 = new MyDeq<>(MyDeq.ClusterSize.BIG, data);
@@ -203,5 +204,145 @@ class MyDeqTest {
         assertEquals((short) 2, deq3.getLast());
         assertEquals((short) 12, deq3.getFirst());
         assertEquals(2, deq3.size());
+    }
+
+    @Test
+    void removeFirstOccurrence(){
+        // Удаление единичного экземпляра в середине полного кластера
+        Character[] data1 = new Character[]{'a', 'b', 'c', 'd', 'e'};
+        Character[] resultData = new Character[]{'e', 'd', 'b', 'a'};
+        MyDeq<Character> deq1 = new MyDeq<>(MyDeq.ClusterSize.NORMAL, data1);
+        assertEquals(true, deq1.removeFirstOccurrence('c'));
+        assertArrayEquals(resultData, deq1.toArray());
+
+        // Удаление повторяющегося элемента
+        Integer[] data2 = new Integer[]{3, 4, 5, 5, 2, 1};
+        MyDeq<Integer> deq2 = new MyDeq<>(MyDeq.ClusterSize.NORMAL, data2);
+        assertEquals(true, deq2.removeFirstOccurrence(5));
+
+        // Попытка удалить отсутствующий элемент
+        List<Integer> data3 = Arrays.asList(new Integer[]{1, 2, 3, 4, 5, 6, 7});
+        MyDeq<Integer> deq3 = new MyDeq<>(MyDeq.ClusterSize.BIG, data3);
+        assertEquals(false, deq3.removeFirstOccurrence(8));
+        assertArrayEquals(data3.toArray(), deq3.toArray());
+
+        // Удаление элемента из кластера, который не головной
+        List<Integer> data4 = Arrays.asList(new Integer[]{1, 2, 3, 4, 5, 6, 7});
+        MyDeq<Integer> deq4 = new MyDeq<>(MyDeq.ClusterSize.NORMAL, data4);
+        assertEquals(true, deq4.removeFirstOccurrence(3));
+        assertArrayEquals(new Integer[]{1, 2, 4, 5, 6, 7}, deq4.toArray());
+
+        // Отчистка кластера
+        Integer[] data5 = new Integer[]{1, 2, 3, 4};
+        MyDeq<Integer> deq5 = new MyDeq<>(MyDeq.ClusterSize.SMALL, data5);
+        assertEquals(true, deq5.removeFirstOccurrence(2));
+        Cluster<Integer> head = deq5.getHead();
+        assertArrayEquals(new Integer[]{4, 3, 1}, deq5.toArray());
+
+        // Отчистка головного кластера
+        Integer[] data6 = new Integer[]{1, 2, 3, 4, 5, 6};
+        MyDeq<Integer> deq61 = new MyDeq<>(MyDeq.ClusterSize.NORMAL, data6);
+        assertEquals(true, deq61.removeFirstOccurrence(6));
+        assertArrayEquals(new Integer[] {5, 4, 3, 2, 1}, deq61.toArray());
+
+        MyDeq<Integer> deq62 = new MyDeq<>(MyDeq.ClusterSize.SMALL, data6);
+        assertEquals(true, deq62.removeFirstOccurrence(6));
+        assertArrayEquals(new Integer[] {5, 4, 3, 2, 1}, deq62.toArray());
+
+        // Отчистка хвоста (возможна только при размере кластеров в 1 элемент
+        Integer[] data7 = new Integer[]{5, 2, 10, 100};
+        MyDeq<Integer> deq7 = new MyDeq<>(MyDeq.ClusterSize.SMALL, data7);
+        assertEquals(true, deq7.removeFirstOccurrence(5));
+        assertArrayEquals(new Integer[]{100, 10, 2}, deq7.toArray());
+
+        // Уделение единственного элемента очереди
+        MyDeq<Boolean> deq8 = new MyDeq<>();
+        deq8.addFirst(true);
+        assertEquals(true, deq8.removeFirstOccurrence(true));
+        assertArrayEquals(new Boolean[]{}, deq8.toArray());
+        deq8.addFirst(true);
+        deq8.addFirst(false);
+        deq8.addFirst(true);
+        assertArrayEquals(new Boolean[]{true, false, true}, deq8.toArray());
+    }
+
+    @Test
+    void removeLastOccurence(){
+        // Удаление элемента из середины кластера
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        deq1.addAll(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        assertEquals(true, deq1.removeLastOccurrence(3));
+        assertArrayEquals(new Integer[]{1, 2, 4, 5}, deq1.toArray());
+
+        // Удаление последнего элемента кластера
+        MyDeq<Character> deq2 = new MyDeq<>();
+        deq2.addAll(Arrays.asList(new Character[]{'1', '2', 'a', '&'}));
+        assertEquals(true, deq2.removeLastOccurrence('&'));
+        assertArrayEquals(new Character[]{'1', '2', 'a'}, deq2.toArray());
+
+        // Удаление первого элемента кластера
+        MyDeq<Integer> deq3 = new MyDeq<>();
+        deq3.addAll(Arrays.asList(new Integer[]{5, 2, 3, 4, 44, -1}));
+        assertEquals(true, deq3.removeLastOccurrence(5));
+        assertArrayEquals(new Integer[]{2, 3, 4, 44, -1}, deq3.toArray());
+
+        // Удаление последнего повторения при наличаи больше одного повторения
+        MyDeq<String> deq4 = new MyDeq<>();
+        deq4.addAll(Arrays.asList(new String[]{"112", "32", "32", "as", "sa"}));
+        assertEquals(true, deq4.removeLastOccurrence("32"));
+        assertArrayEquals(new String[]{"112", "32", "as", "sa"}, deq4.toArray());
+
+        // Попытка удаления отсутствующего элемента
+        MyDeq<Integer> deq5 = new MyDeq<>(MyDeq.ClusterSize.SMALL, new Integer[]{5,2,3,1});
+        assertEquals(false, deq5.removeLastOccurrence(4));
+        assertArrayEquals(new Integer[]{1, 3, 2, 5}, deq5.toArray());
+
+        // Удаление последнего элемента кластера
+        assertEquals(true, deq5.removeLastOccurrence(2));
+        assertArrayEquals(new Integer[]{1,3,5}, deq5.toArray());
+
+        // Удаление единственного элемента очереди
+        MyDeq<Integer> deq6 = new MyDeq<>();
+        deq6.addLast(2);
+        assertEquals(true, deq6.removeLastOccurrence(2));
+        assertArrayEquals(new Integer[]{}, deq6.toArray());
+    }
+
+    @Test
+    void addAll() {
+        // Добавление в пустую очередь
+        MyDeq<Float> deq1 = new MyDeq<>();
+        List<Float> data1 = new LinkedList<>();
+        data1.add(2f);
+        data1.add(3f);
+        data1.add(2.2f);
+        data1.add(1.2f);
+        assertEquals(true, deq1.addAll(data1));
+        Deque<Float> deque = new ArrayDeque<>();
+        deque.addAll(data1);
+        assertArrayEquals(deque.toArray(), deq1.toArray());
+
+        // Добавление пустой коллекции
+        MyDeq<Integer> deq2 = new MyDeq<>();
+        List<Integer> data2 = new ArrayList<>();
+        assertEquals(true, deq2.addAll(data2));
+        assertArrayEquals(data2.toArray(), deq2.toArray());
+
+        // Добавление в уже предзаполненную очередь
+        MyDeq<Byte> deq3 = new MyDeq<>(MyDeq.ClusterSize.NORMAL, new Byte[]{1, -1, 2, 5});
+        List<Byte> data3 = new ArrayList<>();
+        data3.add((byte) -2);
+        data3.add((byte) -2);
+        data3.add((byte) -3);
+        assertEquals(true, deq3.addAll(data3));
+        Byte[] rightData = new Byte[]{5, 2, -1, 1, -2, -2, -3};
+        assertArrayEquals(rightData, deq3.toArray());
+
+        // Добавление null вместо коллекции
+        MyDeq<String> deq4 = new MyDeq<>();
+        List<String> data4 = null;
+        assertThrows(NullPointerException.class, () -> {
+            deq4.addAll(data4);
+        });
     }
 }

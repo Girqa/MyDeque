@@ -2,30 +2,19 @@ package Project;
 
 
 import Project.Classes.MyDeq;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class Main {
     public static void main(String[] args) {
-        MyDeq<String> deq1 = new MyDeq<>();
-        MyDeq<String> deq2 = new MyDeq<>(MyDeq.ClusterSize.BIG);
-        int[] arr = new int[]{1, 2, 3, 4, 5};
-        MyDeq<Integer> deq3 = new MyDeq<>(MyDeq.ClusterSize.SMALL, intArrayToIntegerArray(arr));
-        deq1.addFirst("S0");
-        deq1.addFirst("S1");
-        deq1.addFirst("S2");
-        deq1.addFirst("S3");
-        deq1.addFirst("S4");
-        deq1.addFirst("S5");
-        System.out.println(deq1.getFirst());
-        deq1.removeFirst();
-        System.out.println(deq1.getFirst());
-        deq1.removeFirst();
-        System.out.println(deq1.getFirst());
-        deq1.removeFirst();
-        System.out.println(deq1.getFirst());
-        deq1.removeFirst();
-        System.out.println(deq1.getFirst());
-        deq1.removeFirst();
-        System.out.println(deq1.getFirst());
+        Deque<Integer> deq = new ArrayDeque<>();
+        deq.addFirst(5);
+        deq.addFirst(5);
+        deq.addFirst(5);
+        deq.addFirst(5);
+        deq.addFirst(5);
+        System.out.println(deq.offerFirst(3));
+        System.out.println(deq.removeFirst());
     }
 
 
