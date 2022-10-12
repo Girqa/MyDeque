@@ -300,6 +300,12 @@ class MyDeqTest {
         // Удаление последнего элемента кластера
         assertEquals(true, deq5.removeLastOccurrence(2));
         assertArrayEquals(new Integer[]{1,3,5}, deq5.toArray());
+        assertEquals(true, deq5.removeLastOccurrence(5));
+        assertArrayEquals(new Integer[]{1,3}, deq5.toArray());
+        assertEquals(true, deq5.removeLastOccurrence(3));
+        assertArrayEquals(new Integer[]{1}, deq5.toArray());
+        assertEquals(true, deq5.removeLastOccurrence(1));
+        assertArrayEquals(new Integer[]{}, deq5.toArray());
 
         // Удаление единственного элемента очереди
         MyDeq<Integer> deq6 = new MyDeq<>();
@@ -343,6 +349,221 @@ class MyDeqTest {
         List<String> data4 = null;
         assertThrows(NullPointerException.class, () -> {
             deq4.addAll(data4);
+        });
+    }
+
+    @Test
+    void toArray(){
+        // Проверка пустой очереди
+        MyDeq<Integer> deq = new MyDeq<>();
+        assertArrayEquals(new Integer[]{}, deq.toArray());
+
+        // Проверка очереди с одним частично заполненным кластером
+        List<Integer> data = new ArrayList<>(Arrays.asList(new Integer[]{5, 2, 3, 4}));
+        deq.addAll(data);
+        assertIterableEquals(data, deq);
+
+        // Проверка очереди с несколькими кластерами
+        deq.addAll(data);
+        data.addAll(data);
+        assertIterableEquals(deq, data);
+    }
+
+    @Test
+    void clear(){
+        // Отчистка дека из одного частично заполненного кластера
+        MyDeq<Integer> deq1 = new MyDeq<>(MyDeq.ClusterSize.BIG);
+        deq1.addAll(Arrays.asList(new Integer[]{1, 2, 3, 4, 5, 6}));
+        deq1.clear();
+        assertEquals(0, deq1.size());
+        assertArrayEquals(new Integer[]{}, deq1.toArray());
+
+        // Отчистка пустого дека
+        MyDeq<Integer> deq2 = new MyDeq<>();
+        deq2.clear();
+        assertEquals(0, deq2.size());
+        assertArrayEquals(new Integer[]{}, deq2.toArray());
+
+        // Отчистка дека из одного полного кластера
+        MyDeq<String> deq3 = new MyDeq<>(MyDeq.ClusterSize.NORMAL);
+        deq3.addAll(Arrays.asList(new String[]{"A", "a", "B", "b", "c"}));
+        deq3.clear();
+        assertEquals(0, deq3.size());
+        assertArrayEquals(new String[]{}, deq3.toArray());
+
+        // Отчистка дека из нескольких кластеров
+        MyDeq<Integer> deq4 = new MyDeq<>(MyDeq.ClusterSize.SMALL);
+        deq4.addAll(Arrays.asList(new Integer[]{1, 2, 1, -100, 10}));
+        deq4.clear();
+        assertEquals(0, deq4.size());
+        assertArrayEquals(new Integer[]{}, deq4.toArray());
+    }
+
+    @Test
+    void iterator(){
+        // Проход по пустому DEQ
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        Iterator<Integer> it1 = deq1.iterator();
+        assertEquals(false, it1.hasNext());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            it1.next();
+        });
+
+        // Проход по наполненному DEQ
+        MyDeq<Character> deq2 = new MyDeq<>();
+        List<Character> data2 = Arrays.asList(new Character[]{'z', 'x', 'c'});
+        deq2.addAll(data2);
+        Iterator<Character> it2 = deq2.iterator();
+        for (Character ch: data2) {
+            assertEquals(ch, it2.next());
+        }
+        assertFalse(it2.hasNext());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            it2.next();
+        });
+
+        // Проход после удаления элемента
+        deq2.removeFirstOccurrence('x');
+        Iterator<Character> it3 = deq2.iterator();
+        for (Character ch: data2) {
+            if (ch != 'x') {
+                assertEquals(ch, it3.next());
+            }
+        }
+        assertFalse(it3.hasNext());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            it3.next();
+        });
+
+        // Проход с удалением элементов
+        MyDeq<Float> deq4 = new MyDeq<>(MyDeq.ClusterSize.SMALL);
+        List<Float> data4 = Arrays.asList(new Float[]{1f, 2f, -221f, 3.52f, 5.6f});
+        deq4.addAll(data4);
+        Iterator<Float> it4 = deq4.iterator();
+        for (Float num: data4) {
+            assertEquals(num, it4.next());         // Элементы итератора не изменяются
+            deq4.removeLast();
+        }
+        assertFalse(it4.hasNext());
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> {
+            it4.next();
+        });
+        assertEquals(0, deq4.size());
+    }
+
+    @Test
+    void retainAll(){
+        // Проверка при совпадении всех элементов
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        List<Integer> data1 = Arrays.asList(new Integer[]{5, 2, 1, 2, 5});
+        deq1.addAll(data1);
+        assertIterableEquals(deq1, data1);
+        assertFalse(deq1.retainAll(data1));
+        assertIterableEquals(deq1, data1);
+
+        // Проверка при несовпадении всех элементов
+        MyDeq<Integer> deq2 = new MyDeq<>();
+        List<Integer> data2 = Arrays.asList(new Integer[]{1, 11, -1, 2});
+        deq2.addAll(Arrays.asList(new Integer[]{5, 3, 4, 6}));
+        assertTrue(deq2.retainAll(data2));
+        assertEquals(0, deq2.size());
+
+        // Проверка при частичном совпадении
+        MyDeq<Integer> deq3 = new MyDeq<>(MyDeq.ClusterSize.SMALL);
+        List<Integer> data3 = new ArrayList<>();
+        data3.addAll(Arrays.asList(new Integer[]{5, 2, 1, 4, 6, 8, 1}));
+        deq3.addAll(data3);
+        List<Integer> mask3 = Arrays.asList(new Integer[]{2, 4, 3, 1});
+        data3.retainAll(mask3);
+        deq3.retainAll(mask3);
+        assertIterableEquals(data3, deq3);
+
+        // Проверка пустой очереди
+        MyDeq<Short> deq4 = new MyDeq<>();
+        List<Short> mask4 = Arrays.asList(new Short[]{5, 2, -1});
+        assertFalse(deq4.retainAll(mask4));
+        assertEquals(0, deq4.size());
+
+        // Проверка для пустой коллекции
+        MyDeq<Integer> deq5 = new MyDeq<>();
+        deq5.addAll(Arrays.asList(new Integer[]{6, 2, 99}));
+        List<Integer> mask5 = new ArrayList<>();
+        assertTrue(deq5.retainAll(mask5));
+        assertEquals(0, deq5.size());
+
+        // Проверка коллекции = null
+        assertThrows(NullPointerException.class, () -> {
+            deq5.retainAll(null);
+        });
+    }
+
+    @Test
+    void removeAll(){
+        // Удаление всех элементов очереди
+        List<Integer> data1 = Arrays.asList(new Integer[]{5, 2, 1, 3, 4});
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        deq1.addAll(data1);
+        assertTrue(deq1.removeAll(data1));
+
+        // Удаление части элементов
+        List<Integer> data2 = new ArrayList<>(Arrays.asList(new Integer[]{5, 2, 1, 3, 4}));
+        MyDeq<Integer> deq2 = new MyDeq<>();
+        deq2.addAll(data2);
+        List<Integer> mask2 = new ArrayList<>(Arrays.asList(new Integer[]{2, 3, 7}));
+        assertTrue(deq2.removeAll(mask2));
+        data2.removeAll(mask2);
+        assertIterableEquals(data2, deq2);
+
+        // Непересекающиеся коллекции
+        List<Object> data3 = new ArrayList<>(Arrays.asList(new Object[]{12, 's', 2, 5}));
+        List<Object> mask3 = new ArrayList<>(Arrays.asList(new Object[]{52, "ww", -21.5, true}));
+        MyDeq<Object> deq3 = new MyDeq<>();
+        deq3.addAll(data3);
+        assertFalse(deq3.removeAll(mask3));
+        assertIterableEquals(data3, deq3);
+
+        // Коллекция = null
+        assertThrows(NullPointerException.class, () -> {
+            deq3.removeAll(null);
+        });
+    }
+
+    @Test
+    void contains(){
+        // Проверка если содержит
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        deq1.addAll(Arrays.asList(new Integer[]{5, 2, 1, 3, 4, 6}));
+        assertTrue(deq1.contains(1));
+
+        // Проверка если не содержит
+        assertFalse(deq1.contains(9));
+
+        // Проверка если пустая очередь
+        MyDeq<Boolean> deq3 = new MyDeq<>();
+        assertFalse(deq3.contains(true));
+
+        // Проверка null элемента
+        assertThrows(NullPointerException.class, () -> {
+            deq1.contains(null);
+        });
+    }
+
+    @Test
+    void containsAll(){
+        // Проверка содержания всех элементов
+        List<Integer> data1 = new ArrayList<>(Arrays.asList(new Integer[]{5, 2, 1, 5, 7, 8, 8, 1, 3, 5}));
+        MyDeq<Integer> deq1 = new MyDeq<>();
+        deq1.addAll(data1);
+        List<Integer> mask1 = Arrays.asList(new Integer[]{1, 5, 8});
+        assertTrue(deq1.containsAll(mask1));
+
+        // Проверка содержания всех кроме одного
+        List<Integer> mask2 = Arrays.asList(new Integer[]{2, 7, 9});
+        assertFalse(deq1.containsAll(mask2));
+
+        // Проверка пустой коллекции
+        assertThrows(NullPointerException.class, () -> {
+            deq1.containsAll(null);
         });
     }
 }

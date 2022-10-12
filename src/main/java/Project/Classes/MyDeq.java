@@ -13,6 +13,7 @@ public class MyDeq<T> implements Deque<T> {
      * enum ClusterSize(SMALL(1), NORMAL(5), BIG(10)). По умолчанию NORMAL(5).
      * - Cluster head - приватное поле для хранения головы очереди
      * - Cluster tail - приватное поле для хранения хвоста очереди
+     * - int size - число элементов очереди
      */
     public enum ClusterSize {
         /**
@@ -27,32 +28,29 @@ public class MyDeq<T> implements Deque<T> {
     private int size;
     private Cluster<T> head;
     private Cluster<T> tail;
-
+    /**
+     *  Инициализация двусторонней очереди с параметрами по умолчанию
+     */
     public MyDeq() {
-        /*
-         *  Инициализация двусторонней очереди с параметрами по умолчанию
-         */
         this.clusterSize = ClusterSize.NORMAL;
         Cluster<T> initCluster = new Cluster<>(this.clusterSize.value);
         head = initCluster;
         tail = initCluster;
     }
-
+    /**
+     * Инициализация двусторонней очереди (без инициализации значений)
+     */
     public MyDeq(ClusterSize clusterSize) {
-        /*
-         * Инициализация двусторонней очереди (без инициализации значений)
-         */
         this.clusterSize = clusterSize;
         Cluster<T> initCluster = new Cluster<>(this.clusterSize.value);
         head = initCluster;
         tail = initCluster;
     }
-
+    /**
+     * Инициализация двусторонней очереди с инициализацией значений
+     * startState - начальное состояние (наполнение) очереди
+     */
     public MyDeq(ClusterSize clusterSize, T[] startState) {
-        /*
-         * Инициализация двусторонней очереди с инициализацией значений
-         * startState - начальное состояние (наполнение) очереди
-         */
         this.clusterSize = clusterSize;
         Cluster<T> initCluster = new Cluster<>(this.clusterSize.value);
         head = initCluster;
@@ -61,11 +59,11 @@ public class MyDeq<T> implements Deque<T> {
             addFirst(element);
         }
     }
+    /**
+     * Инициализация двусторонней очереди с инициализацией значений
+     * startState - начальное состояние (наполнение) очереди
+     */
     public MyDeq(ClusterSize clusterSize, Collection<? extends T> c) {
-        /*
-         * Инициализация двусторонней очереди с инициализацией значений
-         * startState - начальное состояние (наполнение) очереди
-         */
         this.clusterSize = clusterSize;
         Cluster<T> initCluster = new Cluster<>(this.clusterSize.value);
         head = initCluster;
@@ -73,6 +71,11 @@ public class MyDeq<T> implements Deque<T> {
         addAll(c);
     }
 
+    /**
+     * Добавление элемента в голову
+     * Бросает NullPointerException если произошла попытка добавления null лемента
+     * @param o the element to add
+     */
     @Override
     public void addFirst(T o) {
         if (o == null) {
@@ -82,6 +85,11 @@ public class MyDeq<T> implements Deque<T> {
         head = head.addFirst(o);
     }
 
+    /**
+     * Добавление в хвост
+     * Бросает NullPointerException если произошла попытка добавления null лемента
+     * @param o the element to add
+     */
     @Override
     public void addLast(T o) {
         if (o == null) {
@@ -91,6 +99,11 @@ public class MyDeq<T> implements Deque<T> {
         tail = tail.addLast(o);
     }
 
+    /**
+     * Попытка добавления в начало очереди
+     * @param o the element to add
+     * @return добавил в голову или нет (true/false)
+     */
     @Override
     public boolean offerFirst(T o) {
         if (o == null) {
@@ -105,6 +118,11 @@ public class MyDeq<T> implements Deque<T> {
         }
     }
 
+    /**
+     * Попытка добавления в конец очереди
+     * @param o the element to add
+     * @return добавил или нет true/false
+     */
     @Override
     public boolean offerLast(T o) {
         if (o == null) {
@@ -120,6 +138,11 @@ public class MyDeq<T> implements Deque<T> {
         }
     }
 
+    /**
+     * Попытка достать элемент из начала (вернуть значение и удалить из очереди).
+     * Выбрасывает DequeIsEmptyException если очередь пуста
+     * @return first element
+     */
     @Override
     public T removeFirst() {
         T first;
@@ -145,6 +168,11 @@ public class MyDeq<T> implements Deque<T> {
         throw new DequeIsEmptyException();
     }
 
+    /**
+     * Попытка достать последний элемент (вернуть значение и удалить из очереди).
+     * Если очередь пуста -> DequeIsEmptyException.
+     * @return last element
+     */
     @Override
     public T removeLast() {
         T last;
@@ -168,16 +196,33 @@ public class MyDeq<T> implements Deque<T> {
         throw new DequeIsEmptyException();
     }
 
+    /**
+     * То же что и removeFirst, но вернет null, если очередь пуста
+     */
     @Override
     public T pollFirst() {
-        return removeLast();
+        if (size == 0) {
+            return null;
+        }
+        return removeFirst();
     }
 
+    /**
+     * То же что и removeLast, но вернет null, если очередь пуста
+     */
     @Override
     public T pollLast() {
+        if (size == 0) {
+            return null;
+        }
         return removeLast();
     }
 
+    /**
+     * Возвращает значение первого элемента.
+     * Если очередь пуста -> DequeIsEmptyException
+     * @return first element
+     */
     @Override
     public T getFirst() {
         if (size > 0 && head.getCursor() > 0) {
@@ -185,7 +230,11 @@ public class MyDeq<T> implements Deque<T> {
         }
         throw new DequeIsEmptyException("Deque is empty");
     }
-
+    /**
+     * Возвращает значение последнего элемента.
+     * Если очередь пуста -> DequeIsEmptyException
+     * @return last element
+     */
     @Override
     public T getLast() {
         if (size > 0) {
@@ -194,16 +243,34 @@ public class MyDeq<T> implements Deque<T> {
         throw new DequeIsEmptyException("Deque is empty");
     }
 
+    /**
+     * То же, что и getFirst, но возвращает null, если очередь пуста
+     * @return first element
+     */
     @Override
     public T peekFirst() {
+        if (size == 0) {
+            return null;
+        }
         return getFirst();
     }
-
+    /**
+     * То же, что и getLast, но возвращает null, если очередь пуста
+     * @return last element
+     */
     @Override
     public T peekLast() {
+        if (size == 0) {
+            return null;
+        }
         return getLast();
     }
 
+    /**
+     * Удаляет элемент o если он присутствует. Ищет элемент от начала.
+     * @param o element to be removed from this deque, if present
+     * @return если произошло удаление -> true иначе -> false
+     */
     @Override
     public boolean removeFirstOccurrence(Object o) {
         T element = (T) o;
@@ -254,7 +321,11 @@ public class MyDeq<T> implements Deque<T> {
         }
         return found ? true : false;
     }
-
+    /**
+     * Удаляет элемент o если он присутствует. Ищет элемент с конца.
+     * @param o element to be removed from this deque, if present
+     * @return если произошло удаление -> true иначе -> false
+     */
     @Override
     public boolean removeLastOccurrence(Object o) {
         T element = (T) o;
@@ -306,38 +377,69 @@ public class MyDeq<T> implements Deque<T> {
         return found ? true : false;
     }
 
+    /**
+     * То же, что и addLast
+     * @param o element whose presence in this collection is to be ensured
+     * @return true если очередь изменилась
+     */
     @Override
     public boolean add(T o) {
         addLast(o);
         return true;
     }
-
+    /**
+     * То же, что и addLast
+     * @param o element whose presence in this collection is to be ensured
+     * @return true если очередь изменилась
+     */
     @Override
     public boolean offer(T o) {
         addLast(o);
         return true;
     }
 
+    /**
+     * То же, что и removeFirst
+     * @return firstElement
+     */
     @Override
     public T remove() {
         return removeFirst();
     }
-
+    /**
+     * То же, что и pollFirst
+     * @return firstElement
+     */
     @Override
     public T poll() {
         return pollFirst();
     }
 
+    /**
+     * То же, что и getFirst
+     * @return first element
+     */
     @Override
     public T element() {
         return getFirst();
     }
-
+    /**
+     * То же, что и getFirst
+     * @return first element
+     */
     @Override
     public T peek() {
         return getFirst();
     }
 
+    /**
+     * Добавляет все элементы из представленной коллекции в очередь.
+     * Бросает:
+     * - ClassCastException если коллекция содержит элементы другого типа.
+     * - NullPointerException если коллекция == null (или содержит null)
+     * @param c collection containing elements to be added to this collection
+     * @return true если произошло успешное добавление
+     */
     @Override
     public boolean addAll(Collection<? extends T> c) {
         if (c == null) {
@@ -355,59 +457,162 @@ public class MyDeq<T> implements Deque<T> {
         }
     }
 
+    /**
+     * Очищает DEQ. Отчистка осуществляется за счет сборщика мусора. Переопределяю ссылки на головной и
+     * хвостовой элемент, чем говрю сборщику мусора, что можно удалить прошлый набор кластеров.
+     */
     @Override
     public void clear() {
-
+        size = 0;
+        Cluster<T> initCluster = new Cluster<>(clusterSize.value);
+        head = initCluster;
+        tail = initCluster;
     }
 
+    /**
+     * Удаляет все элементы, которые не включенны в Collection c.
+     * @param c collection containing elements to be retained in this collection
+     * @return true если выполнили удаления, иначе false
+     */
     @Override
     public boolean retainAll(Collection c) {
-        return false;
+        boolean flg = false;
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        for (T el: this) {
+            if (! c.contains(el)) {
+                flg = true;
+                removeLastOccurrence(el);
+            }
+        }
+        return flg;
     }
 
+    /**
+     * Удаляет все элементы, которые включенны в Collection c.
+     * @param c collection containing elements to be removed from this collection
+     * @return true если произошло удаление
+     */
     @Override
     public boolean removeAll(Collection c) {
-        return false;
+        boolean flg = false;
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        for (T el: this) {
+            if (c.contains(el)) {
+                flg = true;
+                removeLastOccurrence(el);
+            }
+        }
+        return flg;
     }
 
+    /**
+     * То же, что и addFirst
+     * @param o the element to push
+     */
     @Override
     public void push(T o) {
         this.addFirst(o);
     }
-
+    /**
+     * То же, что и removeFirst
+     */
     @Override
     public T pop() {
         return this.removeFirst();
     }
 
+    /**
+     * То же, что и removeFirstOccurrence
+     * @param o element to be removed from this deque, if present
+     */
     @Override
     public boolean remove(Object o) {
-        return false;
+        return removeFirstOccurrence(o);
     }
 
+    /**
+     * Проверка вхождения переданного элемента в очередь.
+     * @param o element whose presence in this deque is to be tested
+     * @return если элемент в очереди -> true, иначе -> false
+     */
     @Override
     public boolean contains(Object o) {
-        return false;
+        if (o == null) {
+            throw new NullPointerException();
+        }
+        Iterator<T> it = iterator();
+        boolean found = false;
+        while (it.hasNext() && !found) {
+            T element = it.next();
+            if (element == o) {
+                found = true;
+            }
+        }
+        return found;
     }
 
+    /**
+     * Проверяет, входят ли ВСЕ элементы коллекции в очередь.
+     * @param c collection to be checked for containment in this collection
+     * @return если все элементы входят -> true, иначе -> false
+     */
     @Override
     public boolean containsAll(Collection c) {
-        return false;
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        for (Object element: c) {
+            if (!contains(element)) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * Возвращает размер очереди
+     * @return количество элементов в очереди
+     */
     @Override
     public int size() {
         return size;
     }
 
+    /**
+     * Проверка наполненности очереди
+     * @return если очередь пуста -> true, иначе -> false
+     */
     @Override
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
 
+    /**
+     * Возвращает итератор по очереди
+     * @return Iterator
+     */
     @Override
     public Iterator iterator() {
-        return null;
+        MyDeq<T> deq = this;
+        Iterator<T> it = new Iterator<T>() {
+            private int curIndex = 0;
+            private T[] array = (T[]) deq.toArray();
+
+            @Override
+            public boolean hasNext() {
+                return curIndex < array.length && array[curIndex] != null;
+            }
+
+            @Override
+            public T next() {
+                return array[curIndex++];
+            }
+        };
+        return it;
     }
 
     /**
@@ -430,16 +635,38 @@ public class MyDeq<T> implements Deque<T> {
         return array;
     }
 
+    /**
+     * @param a the array into which the elements of this collection are to be
+     *        stored, if it is big enough; otherwise, a new array of the same
+     *        runtime type is allocated for this purpose.
+     * @return исходный заполненный массив или новый массив с элементами очереди, если объем исходного недостаточен
+     */
     @Override
     public Object[] toArray(Object[] a) {
-        return new Object[0];
+        if (a.length >= size) {
+            int i = 0;
+            for (T el : this) {
+                a[i++] = el;
+            }
+            return a;
+        }else {
+            return toArray();
+        }
     }
 
+    /**
+     * -------
+     * @return
+     */
     @Override
     public Iterator descendingIterator() {
         return null;
     }
 
+    /**
+     * Вспомогательный метод для проведения тестов (стоит удалить, но пока оставим)
+     * @return
+     */
     public Cluster<T> getHead() {
         return head;
     }
